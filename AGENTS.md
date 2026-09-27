@@ -21,7 +21,3 @@ python lessons/00_mental_model.py
 - 2026-09-27 — Layout `agent/` + `mcp/` packages (loop.py, not agent/agent.py). Reads like a real agent project; lessons still run as scripts.
 - 2026-09-27 — Renamed to agent-unwrapped. Sell raw agent loop; frameworks optional.
 - Rejected — 2026-08 — Flat root modules (`common.py`, `tools.py`, `agent.py`, `mcp_server.py`). Superseded by package layout above.
-
-## Session
-
-See `STATUS.md` for current state and next action.
