@@ -1,13 +1,16 @@
-"""10 — Tiny generation eval harness.
+"""10 — Output / prompt evals (score reply text).
 
-FLOW (read this first):
-  1. Load test cases from evals/gen_cases.jsonl (one JSON object per line).
-  2. For each case: chat(messages) → get final text only (no tools).
-  3. Score that text with deterministic checks (contains / not_contains / max_chars).
+  Watch/ship layer: did the *output* look right?
+  Contrast lesson 11 (agent/behavior evals — tools, steps, trajectory).
+
+FLOW:
+  1. Load cases from evals/gen_cases.jsonl (one JSON object per line).
+  2. For each: chat(messages) → final text only (no tools, no agent loop).
+  3. Score that string: contains / not_contains / max_chars.
   4. Case PASSES only if EVERY check is true.
-  5. Print a scoreboard: id | pass | check details.
+  5. Scoreboard: id | pass | check details.
 
-  This is like unit tests for prompts/models — not an agent loop.
+  Local cousin of Promptfoo / LangSmith *output* scoring.
   Run:  python lessons/10_gen_evals.py
 """
 
@@ -55,10 +58,11 @@ def run_checks(text: str, checks: list[dict]) -> list[tuple[str, bool, str]]:
 
 
 def main() -> None:
-    banner("1) SETUP — model + case file")
+    banner("1) SETUP — output / prompt evals")
+    print("scoring: reply TEXT only (not tools / trajectory — that's lesson 11)")
     print(f"model: {EVAL_MODEL}")
     print(f"cases: {CASES}")
-    print("each case = messages to send + checks on the reply string")
+    print("each case = messages + checks on the reply string")
 
     rows = []
     case_i = 0
@@ -113,7 +117,8 @@ def main() -> None:
     n = len(rows)
     p = sum(1 for _, ok, _, _, _ in rows if ok)
     print(f"\n{p}/{n} passed", flush=True)
-    print("done — same idea as unit tests, for generation quality.")
+    print("done — output/prompt evals (unit tests on reply text).")
+    print("next: lesson 11 scores agent *behavior* (tools, steps, trajectory).")
 
 
 if __name__ == "__main__":

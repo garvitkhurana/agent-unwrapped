@@ -2,7 +2,7 @@
 
 See the wire: raw agent loop — messages → tools → agents → evals. No framework required.
 
-Progressive path from one API message through **tools**, **MCP**, the **agent loop**, and **evals**. Frameworks are optional sugar (lesson 12). Python packages + [lessons/NOTES.md](lessons/NOTES.md).
+Progressive path from one API message through **tools**, **MCP**, the **agent loop**, and **evals**. Frameworks are optional (lesson 12) — same loop, they own the `while`. Python packages + [lessons/NOTES.md](lessons/NOTES.md).
 
 ## Quick start
 
@@ -30,8 +30,8 @@ python lessons/00_mental_model.py
 | 07 | Structured data | `python lessons/07_structured.py` |
 | 08 | Responses | `python lessons/08_responses.py` |
 | 09 | Agent | `python lessons/09_agent.py` |
-| 10 | Gen evals | `python lessons/10_gen_evals.py` |
-| 11 | Agent evals | `python lessons/11_agent_evals.py` |
+| 10 | Output / prompt evals | `python lessons/10_gen_evals.py` |
+| 11 | Agent / behavior evals | `python lessons/11_agent_evals.py` |
 | 12 | Frameworks (optional) | `python lessons/12_frameworks.py` |
 
 ```text
@@ -39,10 +39,10 @@ Foundation  00 → 01 → 02 → 03
 Capability  04 → 05 → 06 · 07 → 08
 Agency      09 agent loop
 Measure     10 gen evals → 11 agent evals
-Optional    12 frameworks (same loop, LangChain sugar)
+Optional    12 frameworks (same loop; LangChain owns the while)
 ```
 
-**Rule of thumb:** call the tool yourself → let the model call it → MCP standardizes access → measure answers, then trajectories → (optional) framework sugar.
+**Rule of thumb:** call the tool yourself → let the model call it → MCP standardizes access → measure answers, then trajectories → (optional) let a framework write the while.
 
 ## Layout
 

@@ -1,12 +1,15 @@
-"""11 — Tiny agent eval harness (trajectory + outcome).
+"""11 — Agent / behavior evals (tools, steps, trajectory).
+
+  Watch/ship layer: did the *agent act* right?
+  Contrast lesson 10 (output/prompt evals — score reply text only).
 
 FLOW:
   1. Load cases from evals/agent_cases.jsonl
-  2. For each: run_agent(task)  →  {final, steps, step_count}
-  3. Score expect checks (tools used, substring, max LLM rounds, …)
+  2. For each: run_agent(task) → {final, steps, step_count}
+  3. Score expect: tools_used_subset, max_steps, forbidden_tools, success_substring
   4. Scoreboard
 
-  Unlike lesson 10 (text-only), this judges *behavior* + answer.
+  Local cousin of LangSmith *trajectory* / agent evals.
   Note: each case = several LLM calls — eats free-tier quota fast.
 
   Run:  python lessons/11_agent_evals.py
@@ -57,7 +60,8 @@ def score_case(case: dict, result: dict) -> list[tuple[str, bool]]:
 
 
 def main() -> None:
-    banner("1) SETUP")
+    banner("1) SETUP — agent / behavior evals")
+    print("scoring: tools used · step budget · trajectory (not text-only — that's lesson 10)")
     if LLM_PROVIDER == "anthropic":
         print(f"provider: anthropic  model: {ANTHROPIC_MODEL}")
     else:
@@ -123,6 +127,8 @@ def main() -> None:
     n = len(rows)
     p = sum(1 for _, ok, _, _, _ in rows if ok)
     print(f"\n{p}/{n} passed", flush=True)
+    print("done — agent/behavior evals (tools, steps, trajectory).")
+    print("pair with lesson 10 (output/prompt evals) — both matter.")
 
 
 if __name__ == "__main__":

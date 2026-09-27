@@ -12,7 +12,7 @@ python lessons/00_mental_model.py
 
 ## Constraints
 
-- Goal: sell the raw agent loop; frameworks are optional sugar.
+- Goal: sell the raw agent loop; frameworks are optional (same while, they write it).
 - Keep teaching UX: `python lessons/NN_*.py` (no install required); packages live at repo root, not under `src/`.
 - Non-goals: production agent framework, multi-provider SDKs beyond OpenRouter/Anthropic.
 

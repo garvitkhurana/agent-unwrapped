@@ -1,52 +1,67 @@
 # Lesson notes
 
-Run: `python lessons/NN_….py`. This page is the **cheat sheet** for ideas that kept coming up.
+Run: `python lessons/NN_….py`. Cheat sheet for the mental model — not a book.
 
 ---
 
-## One-pager — how the pieces fit
+## The summary loop
 
 ```text
-messages  ──chat()──►  model
-                │
-         tool_calls? ──► run_tool / MCP call_tool ──► append role=tool
-                │
-                └── no tools ──► final text
-
-evals: score that text (10) or the trajectory (11)
+message  →  chat()  →  model
+                          │
+                   tool-call?
+                    │        │
+                   yes      no
+                    │        └──► final text (done)
+                    ▼
+         run_tool  /  MCP call_tool
+                    │
+         append role=tool  →  loop (chat again)
 ```
 
-Layers (add what you're missing — they don't replace the loop):
+Same cycle whether you write it by hand (05), package it (`agent/loop.py`), or let a framework own the `while`.
+
+### Message append order
+
+```text
+[user]                         ← you write once (or each new human turn)
+chat()
+[assistant + tool_calls]       ← append API message as-is
+[tool result]…                 ← you append after run_tool / call_tool
+chat() again …
+[assistant final text]         ← no tool_calls → done
+```
+
+---
+
+## One-pager — notebook layers
 
 ```mermaid
 flowchart TB
-  subgraph tools_how["How tools are exposed"]
-    PY["agent.tools + run_tool<br/>in-process Python"]
-    MCP["MCP<br/>stdio plugin: call_tool<br/>lesson 06"]
+  subgraph expose["1. Exposing tools"]
+    PY["agent/tools.py + run_tool<br/>in-process, same Python"]
+    MCP["MCP stdio plugin<br/>call_tool — lesson 06"]
   end
 
-  subgraph wire["The wire"]
-    LOOP["while: LLM → tool_calls? → run → append → repeat<br/>agent.loop / lesson 05"]
+  subgraph wire["2. The wire"]
+    LOOP["while: LLM → tool-call? → run → append → repeat<br/>agent/loop.py · lessons 05 / 09"]
   end
 
-  subgraph who_loop["Who writes the while?"]
-    DIY["you: agent.loop"]
+  subgraph who_while["3. Who writes the while?"]
+    DIY["DIY: agent/loop.py"]
     LC["LangChain AgentExecutor"]
     ST["Strands"]
   end
 
-  subgraph who_next["Who picks the next step?"]
+  subgraph who_next["4. Who picks the next step?"]
     MODEL["Model-driven<br/>DIY · LangChain · Strands"]
     GRAPH["You-driven flowchart<br/>LangGraph"]
   end
 
-  subgraph ops["Watch / score / ship"]
-    EVAL["lessons 10–11 jsonl"]
-    LS["LangSmith traces + evals"]
-  end
-
-  subgraph room["Humans + agents together"]
-    BUZZ["Buzz: channels, git, audit<br/>agents are members"]
+  subgraph watch["5. Watch / ship"]
+    OUT["10 — output / prompt evals<br/>score reply text"]
+    BEH["11 — agent / behavior evals<br/>tools · steps · trajectory"]
+    HOST["Hosted cousins: LangSmith · Promptfoo"]
   end
 
   PY --> LOOP
@@ -58,49 +73,58 @@ flowchart TB
   LC --> MODEL
   ST --> MODEL
   GRAPH -.-> LOOP
-  DIY --> EVAL
-  LC --> LS
-  GRAPH --> LS
-  ST --> LS
-  DIY -.-> BUZZ
-  LC -.-> BUZZ
-  ST -.-> BUZZ
+  DIY --> OUT
+  DIY --> BEH
+  OUT -.-> HOST
+  BEH -.-> HOST
 ```
 
 | Layer | Thing | Job |
 |-------|--------|-----|
-| Expose tools | `agent.tools`, **MCP** | in-process vs plugin process (`call_tool`) |
-| Wire | `agent.loop`, lesson 05/09 | messages + `tool_calls` + run + append |
-| Sugar loop | LangChain, Strands | same loop, they write the `while` |
-| Flowchart | LangGraph | **you** fix the path; model fills nodes |
-| Observe | 10–11, LangSmith | score text/trajectory; prod traces |
-| Room | Buzz | humans + agents share channels / git / audit |
+| **Expose tools** | `agent/tools.py` + `run_tool`, **MCP** | in-process vs stdio plugin (`call_tool`) |
+| **Wire** | `agent/loop.py`, lessons 05 / 09 | the `while`: messages → tool_calls → run → append |
+| **Who writes the while** | DIY (`agent/loop.py`) / LangChain / Strands | same loop; DIY = you write it; frameworks = optional libs that own the while plumbing |
+| **Who picks next step** | **Model-driven** vs LangGraph | model chooses tools each round, *or* you fix a flowchart |
+| **Watch / ship** | lessons 10–11; LangSmith / Promptfoo | score output text vs agent behavior; hosted = same idea |
+
+Two different questions people conflate:
+
+1. **Who writes the `while`?** — DIY (`agent/loop.py`), LangChain `AgentExecutor`, or Strands. Frameworks are optional libraries that own that plumbing — same loop, they write it.
+2. **Who picks the next step?** — **model-driven** (model emits `tool_calls` each round — DIY, LangChain, Strands) vs **you-driven** (LangGraph flowchart; model fills nodes).
+
+---
+
+## Watch / ship — output vs behavior
+
+| | **10 — output / prompt evals** | **11 — agent / behavior evals** |
+|---|---|---|
+| Asks | Did the **reply text** look right? | Did the **agent act** right? |
+| Runs | `chat()` once — no tools | `run_agent()` — full loop |
+| Cases | `evals/gen_cases.jsonl` | `evals/agent_cases.jsonl` |
+| Checks | `contains` / `not_contains` / `max_chars` | `tools_used_subset`, `max_steps`, `forbidden_tools`, optional `success_substring` |
+| Like | unit tests on generation | unit tests on trajectory |
+
+Why both: a good answer with the wrong tools (or a bloated path) is still a bad agent; a correct tool path with garbage text still fails the user. Score text *and* behavior.
+
+**Hosted cousins** of what you build locally: **LangSmith** (traces + evals), **Promptfoo** (prompt/agent test suites). Same split — output scoring vs trajectory/behavior — just not hand-rolled jsonl.
+
+---
+
+## Idea → takeaway
 
 | Idea | Takeaway |
 |---|---|
 | **API memory** | No server session. Whatever is in your `messages` list *is* the convo. Resend it every `chat()`. |
 | **Roles** | `user` = human; `assistant` = model (text and/or `tool_calls`); `tool` = *your* function result (`tool_call_id` must match). |
 | **Who runs tools?** | Never the model. It only *asks*. You run Python (`run_tool`) or MCP (`call_tool`). |
-| **Batching** | One assistant message can request **many** tools. Your loop runs each locally — that is still **one** LLM round. |
-| **`step_count` (agent)** | = number of **LLM** `chat()` calls, not number of tools. |
+| **Batching** | One assistant message can request **many** tools. Your loop runs each locally — still **one** LLM round. |
+| **`step_count`** | = number of **LLM** `chat()` calls, not number of tools. |
 | **Tokens / $** | `prompt` ≈ input; `completion` ≈ output bill (often includes thinking); `reasoning_tokens` ⊆ completion when exposed. Short `content` ≠ cheap if the model reasoned hard. Use `print_usage()`. |
 | **`max_tokens`** | Caps the output bucket. Reasoning models can burn it on thinking and leave `content: null` — keep evals ≥ ~200. |
-| **Tools registry** | Function in `agent/tools.py` + entry in `TOOL_SPECS` (menu for model) + `DISPATCH` (name → call). `run_tool` is the helper that uses `DISPATCH` — it is **not** itself a tool. |
-| **MCP** | Stdio JSON-RPC **plugin process**, not a FastAPI URL. Client (`06`) spawns `mcp/server.py`. `@mcp.tool()` registers; FastMCP dispatches (no `run_tool`). Also: resources / prompts. Local dir `mcp/` shares the PyPI package name — import the SDK before adding repo root to `sys.path`; run the server as a script, not `python -m mcp.server`. |
+| **Tools registry** | Function in `agent/tools.py` + entry in `TOOL_SPECS` (menu for model) + `DISPATCH` (name → call). `run_tool` uses `DISPATCH` — it is **not** itself a tool. |
+| **MCP** | Stdio JSON-RPC **plugin process**, not a FastAPI URL. Client (`06`) spawns `mcp/server.py`. Local dir `mcp/` shares the PyPI name — import the SDK before adding repo root to `sys.path`; run the server as a script, not `python -m mcp.server`. |
 | **05 vs 09** | Same loop. 05 teaches it inline; `agent.loop` packages it + `on_step` hooks. |
-| **Hooks** | You pass `on_step=fn`. Agent **labels** events (`type`: `llm` / `tool` / `messages` / `final`) at call sites — not magic from the API. Today = observe/log; guardrails need a `before_tool` style veto. |
-| **Evals** | 10 = unit tests on **reply text**. 11 = checks on **agent behavior** (tools used, steps, success). |
-
-### Message append order (tool calling / agent)
-
-```text
-[user]                         ← you write once (or each new human turn)
-chat()
-[assistant + tool_calls]       ← append API message as-is
-[tool result]…                 ← you append after run_tool / call_tool
-chat() again …
-[assistant final text]         ← no tool_calls → done
-```
+| **Hooks** | You pass `on_step=fn`. Agent **labels** events (`llm` / `tool` / `messages` / `final`) — not magic from the API. |
 
 ### Free OpenRouter gotchas
 
@@ -157,20 +181,20 @@ Ask for JSON, **validate** (pydantic). Fail loud on bad shape.
 Anatomy: `content`, `finish_reason`, `usage`, `tool_calls`. Debug from the payload.
 
 ### 09 — Agent
-`agent.loop` = reusable 05 loop (`from agent import run_agent`). `step_count` = LLM rounds.  
+`agent/loop.py` = reusable 05 loop (`from agent import run_agent`). `step_count` = LLM rounds.  
 `on_step` events: `llm` (raw API), `tool` (args/result), `messages` (history), `final`.
 
-### 10 — Gen evals
-`evals/gen_cases.jsonl` → `chat` → score text with `contains` / `not_contains` / `max_chars`.  
-All checks must pass. Banners: load → reply → checks → scoreboard.
+### 10 — Output / prompt evals
+Score **reply text** only (`evals/gen_cases.jsonl` → `chat` → `contains` / `not_contains` / `max_chars`).  
+No tools, no trajectory. Like unit tests for prompts/models. Hosted cousin: Promptfoo / LangSmith output scoring.
 
-### 11 — Agent evals
+### 11 — Agent / behavior evals
 Score **behavior**: tools used, step budget (LLM rounds), optional answer substring.  
 Cases: `evals/agent_cases.jsonl`. Each case = several API calls — heavy on free tier.  
-Daily `429` / `free-models-per-day` fails fast now (no endless retries).
+Daily `429` / `free-models-per-day` fails fast (no endless retries). Hosted cousin: LangSmith trajectory / agent evals.
 
 ### 12 — Frameworks (optional)
-Same task raw vs LangChain. Sugar on messages + tool_calls + the loop — learn 00–11 first.
+Same task raw vs LangChain. LangChain owns the while / messages / tool_calls plumbing — learn 00–11 first.
 Both halves follow `LLM_PROVIDER` (OpenRouter or Anthropic); LangChain is not OpenRouter-only.
 
-MCP is not a framework: it's how tools are *served*. LangGraph is a flowchart (you own control flow). LangSmith watches/evals. Buzz is a workspace, not a loop. See one-pager diagram.
+MCP is not a framework: it's how tools are *served*. LangGraph is a flowchart (you own control flow). LangSmith / Promptfoo watch and score. See one-pager.
