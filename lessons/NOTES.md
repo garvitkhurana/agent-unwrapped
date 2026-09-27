@@ -135,7 +135,7 @@ One user string → one assistant reply. Watch `finish_reason` (`stop` vs `lengt
 History is a **list**. Later turns see earlier ones (fake prior assistant = handwritten, not a previous API call).
 
 ### 03 — Chat
-`system` / `user` / `assistant`; `temperature`, `max_tokens`, `stop`. Baseline vs constrained + token table. Notebook: `notebooks/03_chat_compare.ipynb`.
+`system` / `user` / `assistant`; `temperature`, `max_tokens`, `stop`. Baseline vs constrained + token table.
 
 ### 04 — Tool
 A tool is a normal Python function. Call it yourself — no LLM.  

@@ -105,7 +105,6 @@ agent.py           # minimal tool loop + on_step hooks
 mcp_server.py      # stdio MCP server (tools + sample resources)
 lessons/           # NN_*.py scripts + NOTES.md (cheat sheet)
 evals/             # gen_cases.jsonl, agent_cases.jsonl
-notebooks/         # optional tables only
 ```
 
 ## Optional: Cursor MCP
@@ -148,5 +147,4 @@ Watch the terminal for `[common.chat] retry…` and `fallback model → …`.
 ## Notes
 
 - Lessons **00–11** are framework-free; **12** shows LangChain as optional sugar on the same loop.
-- Older `compare_apis.ipynb` is superseded by lesson 03 (+ optional notebook).
 - Deep dive / “why does X work this way?” → [lessons/NOTES.md](lessons/NOTES.md).
