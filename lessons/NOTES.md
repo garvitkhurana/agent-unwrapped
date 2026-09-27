@@ -21,16 +21,16 @@ Layers (add what you're missing — they don't replace the loop):
 ```mermaid
 flowchart TB
   subgraph tools_how["How tools are exposed"]
-    PY["tools.py + run_tool<br/>in-process Python"]
+    PY["agent.tools + run_tool<br/>in-process Python"]
     MCP["MCP<br/>stdio plugin: call_tool<br/>lesson 06"]
   end
 
   subgraph wire["The wire"]
-    LOOP["while: LLM → tool_calls? → run → append → repeat<br/>agent.py / lesson 05"]
+    LOOP["while: LLM → tool_calls? → run → append → repeat<br/>agent.loop / lesson 05"]
   end
 
   subgraph who_loop["Who writes the while?"]
-    DIY["you: agent.py"]
+    DIY["you: agent.loop"]
     LC["LangChain AgentExecutor"]
     ST["Strands"]
   end
@@ -69,8 +69,8 @@ flowchart TB
 
 | Layer | Thing | Job |
 |-------|--------|-----|
-| Expose tools | `tools.py`, **MCP** | in-process vs plugin process (`call_tool`) |
-| Wire | `agent.py`, lesson 05/09 | messages + `tool_calls` + run + append |
+| Expose tools | `agent.tools`, **MCP** | in-process vs plugin process (`call_tool`) |
+| Wire | `agent.loop`, lesson 05/09 | messages + `tool_calls` + run + append |
 | Sugar loop | LangChain, Strands | same loop, they write the `while` |
 | Flowchart | LangGraph | **you** fix the path; model fills nodes |
 | Observe | 10–11, LangSmith | score text/trajectory; prod traces |
@@ -85,9 +85,9 @@ flowchart TB
 | **`step_count` (agent)** | = number of **LLM** `chat()` calls, not number of tools. |
 | **Tokens / $** | `prompt` ≈ input; `completion` ≈ output bill (often includes thinking); `reasoning_tokens` ⊆ completion when exposed. Short `content` ≠ cheap if the model reasoned hard. Use `print_usage()`. |
 | **`max_tokens`** | Caps the output bucket. Reasoning models can burn it on thinking and leave `content: null` — keep evals ≥ ~200. |
-| **Tools registry** | Function in `tools.py` + entry in `TOOL_SPECS` (menu for model) + `DISPATCH` (name → call). `run_tool` is the helper that uses `DISPATCH` — it is **not** itself a tool. |
-| **MCP** | Stdio JSON-RPC **plugin process**, not a FastAPI URL. Client (`06`) spawns `mcp_server.py`. `@mcp.tool()` registers; FastMCP dispatches (no `run_tool`). Also: resources / prompts. |
-| **05 vs 09** | Same loop. 05 teaches it inline; `agent.py` packages it + `on_step` hooks. |
+| **Tools registry** | Function in `agent/tools.py` + entry in `TOOL_SPECS` (menu for model) + `DISPATCH` (name → call). `run_tool` is the helper that uses `DISPATCH` — it is **not** itself a tool. |
+| **MCP** | Stdio JSON-RPC **plugin process**, not a FastAPI URL. Client (`06`) spawns `mcp/server.py`. `@mcp.tool()` registers; FastMCP dispatches (no `run_tool`). Also: resources / prompts. Local dir `mcp/` shares the PyPI package name — import the SDK before adding repo root to `sys.path`; run the server as a script, not `python -m mcp.server`. |
+| **05 vs 09** | Same loop. 05 teaches it inline; `agent.loop` packages it + `on_step` hooks. |
 | **Hooks** | You pass `on_step=fn`. Agent **labels** events (`type`: `llm` / `tool` / `messages` / `final`) at call sites — not magic from the API. Today = observe/log; guardrails need a `before_tool` style veto. |
 | **Evals** | 10 = unit tests on **reply text**. 11 = checks on **agent behavior** (tools used, steps, success). |
 
@@ -146,7 +146,7 @@ Model emits `tool_calls` → you `run_tool` → append `role: tool` → chat aga
 Client ↔ model only; tools run **beside** that, in your process. Banners + final convo memory.
 
 ### 06 — MCP
-**Client** `06_mcp.py` starts **server** `mcp_server.py` as a subprocess (stdio pipes — **no URL**).  
+**Client** `06_mcp.py` starts **server** `mcp/server.py` as a subprocess (stdio pipes — **no URL**).  
 `initialize` → `list_tools` / resources / prompts → `call_tool` / `read_resource`.  
 Do **not** type into the server alone (`mcp dev` needs `pip install "mcp[cli]"`). No LLM in this lesson — protocol only.
 
@@ -157,7 +157,7 @@ Ask for JSON, **validate** (pydantic). Fail loud on bad shape.
 Anatomy: `content`, `finish_reason`, `usage`, `tool_calls`. Debug from the payload.
 
 ### 09 — Agent
-`agent.py` = reusable 05 loop. `step_count` = LLM rounds.  
+`agent.loop` = reusable 05 loop (`from agent import run_agent`). `step_count` = LLM rounds.  
 `on_step` events: `llm` (raw API), `tool` (args/result), `messages` (history), `final`.
 
 ### 10 — Gen evals

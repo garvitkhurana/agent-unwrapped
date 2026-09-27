@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from pydantic import BaseModel, ValidationError
 
-from common import MODEL_CHAT, chat, choice_text
+from agent.common import MODEL_CHAT, chat, choice_text
 
 
 class CodeAnswer(BaseModel):

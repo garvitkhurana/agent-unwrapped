@@ -2,13 +2,16 @@
 
 FLOW (read this first):
   1. THIS script is the MCP *client*.
-  2. It starts mcp_server.py as a *subprocess* (stdio pipes — no URL).
+  2. It starts mcp/server.py as a *subprocess* (stdio pipes — no URL).
   3. Client asks: list_tools / call_tool  →  JSON-RPC over stdin/stdout.
-  4. Server runs the real Python in tools.py and replies.
+  4. Server runs the real Python in agent.tools and replies.
   5. Script exits → subprocess dies.
 
-  Do NOT run mcp_server.py alone and type into it.
+  Do NOT run mcp/server.py alone and type into it.
   Run:  python lessons/06_mcp.py
+
+  Import note: this repo has a local `mcp/` package (our server). Import the
+  PyPI MCP *SDK* before adding the repo root to sys.path.
 """
 
 from __future__ import annotations
@@ -17,13 +20,14 @@ import asyncio
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-
+# PyPI SDK first — before repo root is on path (local mcp/ would shadow it).
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
 ROOT = Path(__file__).resolve().parents[1]
-SERVER = ROOT / "mcp_server.py"
+sys.path.insert(0, str(ROOT))
+
+SERVER = ROOT / "mcp" / "server.py"
 SEP = "=" * 60
 
 
@@ -63,20 +67,18 @@ async def main() -> None:
             prompts = await session.list_prompts()
             [print(p) for p in prompts.prompts]
 
-        
-
             banner("6) read_resource — 'what is the resource content?'")
             overview = await session.read_resource("lesson://resources")
             print(overview)
 
             resource1 = await session.read_resource("lesson://resources/resource_1")
-            print(resource1) 
+            print(resource1)
 
             banner("7) read_prompt — 'what is the prompt content?'")
             # prompt = await session.read_prompt("lesson://resources")
             # print(prompt)
 
-            banner("8) call_tool — client asks, server runs tools.py")
+            banner("8) call_tool — client asks, server runs agent.tools")
             ws = await session.call_tool(
                 "word_stats_tool",
                 {"text": "hello via MCP"},
@@ -95,7 +97,7 @@ async def main() -> None:
             )
             print("reverse_string_tool ->", rev.content)
 
-    banner("5) done — client exit closes pipes; server process exits")
+    banner("9) done — client exit closes pipes; server process exits")
     print("Same functions as lesson 04, but reached through MCP instead of import.")
 
 

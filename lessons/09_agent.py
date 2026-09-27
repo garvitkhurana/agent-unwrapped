@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from agent import run_agent, tools_used
-from common import pretty
+from agent.common import pretty
 
 SEP = "=" * 60
 

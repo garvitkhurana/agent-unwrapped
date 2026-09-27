@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from common import MODEL_TOOLS, chat, choice_message, finish_reason
-from tools import TOOL_SPECS, run_tool
+from agent.common import MODEL_TOOLS, chat, choice_message, finish_reason
+from agent.tools import TOOL_SPECS, run_tool
 
 
 def run_agent(

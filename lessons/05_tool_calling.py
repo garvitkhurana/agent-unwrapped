@@ -7,8 +7,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from common import MODEL_TOOLS, chat, choice_message, finish_reason, pretty
-from tools import TOOL_SPECS, list_tools, run_tool
+from agent.common import MODEL_TOOLS, chat, choice_message, finish_reason, pretty
+from agent.tools import TOOL_SPECS, list_tools, run_tool
 
 SEP = "=" * 60
 MAX_ROUNDS = 6  # some models call one tool per turn

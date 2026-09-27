@@ -21,7 +21,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from agent import run_agent, tools_used
-from common import ANTHROPIC_MODEL, LLM_PROVIDER, MODEL_TOOLS, ROOT, pretty
+from agent.common import ANTHROPIC_MODEL, LLM_PROVIDER, MODEL_TOOLS, ROOT, pretty
 
 CASES = ROOT / "evals" / "agent_cases.jsonl"
 SEP = "=" * 60

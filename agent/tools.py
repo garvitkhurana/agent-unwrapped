@@ -31,6 +31,7 @@ def reverse_string(string: str) -> str:
     """Reverse a string."""
     return string[::-1]
 
+
 def list_tools() -> list[dict[str, Any]]:
     """List all tools."""
     return [name for name in DISPATCH.keys()]

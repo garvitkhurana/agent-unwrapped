@@ -19,7 +19,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder  # py
 from langchain_core.tools import StructuredTool  # pyright: ignore[reportMissingImports]
 
 from agent import run_agent, tools_used
-from common import (
+from agent.common import (
     ANTHROPIC_API_KEY,
     ANTHROPIC_MODEL,
     API_KEY,
@@ -28,7 +28,7 @@ from common import (
     URL,
     require_api_key,
 )
-from tools import calculator, word_stats
+from agent.tools import calculator, word_stats
 
 TASK = (
     "Use calculator for (10 + 5) * 2, then word_stats on 'framework sugar', "
@@ -56,7 +56,7 @@ def make_llm(*, temperature: float = 0.1):
 
 def run_raw() -> None:
     print("=" * 60)
-    print("RAW agent.py (lesson 09 loop)")
+    print("RAW agent.loop (lesson 09 loop)")
     print("=" * 60)
 
     def on_step(event: dict) -> None:

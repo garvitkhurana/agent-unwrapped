@@ -19,7 +19,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from common import MODEL_CHAT, MODEL_TOOLS, ROOT, chat, choice_text, pretty
+from agent.common import MODEL_CHAT, MODEL_TOOLS, ROOT, chat, choice_text, pretty
 
 CASES = ROOT / "evals" / "gen_cases.jsonl"
 SEP = "=" * 60

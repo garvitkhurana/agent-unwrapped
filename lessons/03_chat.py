@@ -7,7 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from common import MODEL_CHAT, chat, choice_text, finish_reason, print_usage, usage_breakdown
+from agent.common import MODEL_CHAT, chat, choice_text, finish_reason, print_usage, usage_breakdown
 
 PROMPT = "Python code to give a sqrt of pi to 6 decimal places."
 SYSTEM = "Be terse. Output only what was asked. No greetings or extras."

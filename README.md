@@ -2,80 +2,21 @@
 
 See the wire: raw agent loop — messages → tools → agents → evals. No framework required.
 
-Progressive path from one API message through **tools**, **MCP**, the **agent loop**, and **evals**; frameworks are optional sugar (lesson 12).  
-Mostly **Python scripts** + [lessons/NOTES.md](lessons/NOTES.md).
+Progressive path from one API message through **tools**, **MCP**, the **agent loop**, and **evals**. Frameworks are optional sugar (lesson 12). Python packages + [lessons/NOTES.md](lessons/NOTES.md).
 
-## Setup
+## Quick start
 
-Needs **Python 3.10+** (3.12 recommended; `mcp` does not support 3.9).
+**Python 3.10+** (3.12 recommended; `mcp` SDK needs ≥3.10).
 
 ```bash
-# example with pyenv
-~/.pyenv/versions/3.12.13/bin/python -m venv .venv
+python3.12 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env   # add OPENROUTER_API_KEY
+python lessons/00_mental_model.py
 ```
-
-| Env | Purpose | Default |
-|---|---|---|
-| `OPENROUTER_API_KEY` | required (unless using Anthropic) | — |
-| `OPENROUTER_MODEL_CHAT` | lessons 00–04, 07–08, 10 | `openai/gpt-oss-20b:free` |
-| `OPENROUTER_MODEL_CHAT_FALLBACKS` | tried after chat retries fail | `gemma-4-31b-it:free`, `gpt-oss-20b:free` |
-| `OPENROUTER_MODEL_TOOLS` | lessons **05, 09, 11, 12** (must support `tools`) | `openai/gpt-oss-20b:free` |
-| `OPENROUTER_MODEL_TOOLS_FALLBACKS` | tried after tools retries fail | `gemma-4-31b-it:free`, `openrouter/free` |
-| `LLM_PROVIDER` | `openrouter` (default) or `anthropic` | `openrouter` |
-
-Free Nemotron often stalls on OpenRouter — prefer `gpt-oss` for chat/evals (see `.env.example`).  
-When free quota is exhausted, set `LLM_PROVIDER=anthropic` plus `ANTHROPIC_API_KEY` (see `.env.example`).  
-Pick a tool-capable model: [openrouter.ai/models?supported_parameters=tools](https://openrouter.ai/models?supported_parameters=tools).
-
-**Concepts / FAQ:** [lessons/NOTES.md](lessons/NOTES.md) (one-pager: tokens, tools registry, MCP stdio, agent hooks, evals).
 
 ## Curriculum
-
-```mermaid
-flowchart TB
-  subgraph foundation [0_Foundation]
-    s00[00_mental_model]
-    s01[01_message]
-    s02[02_multi_message]
-    s03[03_chat]
-  end
-  subgraph capability [1_Capability]
-    s04[04_tool]
-    s05[05_tool_calling]
-    s06[06_mcp]
-    s07[07_structured]
-    s08[08_responses]
-  end
-  subgraph agency [2_Agency]
-    s09[09_agent]
-  end
-  subgraph measure [3_Measure]
-    s10[10_gen_evals]
-    s11[11_agent_evals]
-  end
-  subgraph optional [4_Optional]
-    s12[12_frameworks]
-  end
-  foundation --> capability --> agency --> measure --> optional
-  s00 --> s01 --> s02 --> s03
-  s04 --> s05 --> s06
-  s03 --> s04
-  s05 --> s09
-  s07 --> s08 --> s09
-  s03 --> s07
-  s09 --> s10 --> s11 --> s12
-```
-
-```text
-Foundation     00 mental model → 01 message → 02 multi-message → 03 chat
-Capability     04 tool → 05 tool calling → 06 MCP → 07 structured → 08 responses
-Agency         09 agent loop
-Measure        10 gen evals → 11 agent evals
-Optional       12 frameworks (LangChain sugar on the same loop)
-```
 
 | # | Lesson | Run |
 |---|---|---|
@@ -93,43 +34,56 @@ Optional       12 frameworks (LangChain sugar on the same loop)
 | 11 | Agent evals | `python lessons/11_agent_evals.py` |
 | 12 | Frameworks (optional) | `python lessons/12_frameworks.py` |
 
-Concept notes: [lessons/NOTES.md](lessons/NOTES.md).
+```text
+Foundation  00 → 01 → 02 → 03
+Capability  04 → 05 → 06 · 07 → 08
+Agency      09 agent loop
+Measure     10 gen evals → 11 agent evals
+Optional    12 frameworks (same loop, LangChain sugar)
+```
 
-**Rule of thumb:** call the tool yourself → let the model call it → MCP standardizes access → measure answers, then trajectories → (optional) see the same loop in a framework.
+**Rule of thumb:** call the tool yourself → let the model call it → MCP standardizes access → measure answers, then trajectories → (optional) framework sugar.
 
 ## Layout
 
 ```
-common.py          # OpenRouter chat + usage helpers + retries
-tools.py           # word_stats, calculator, reverse_string + TOOL_SPECS/DISPATCH
-agent.py           # minimal tool loop + on_step hooks
-mcp_server.py      # stdio MCP server (tools + sample resources)
-lessons/           # NN_*.py scripts + NOTES.md (cheat sheet)
-evals/             # gen_cases.jsonl, agent_cases.jsonl
+agent/                 # core loop + shared libs
+  __init__.py          # exports run_agent, tools_used
+  loop.py              # minimal tool loop + on_step hooks
+  common.py            # OpenRouter/Anthropic chat + retries
+  tools.py             # word_stats, calculator, reverse_string
+mcp/                   # stdio MCP server (own package)
+  server.py            # FastMCP tools + sample resources
+lessons/               # NN_*.py scripts + NOTES.md
+evals/                 # gen_cases.jsonl, agent_cases.jsonl
 ```
 
-## Optional: Cursor MCP
+Lessons stay `python lessons/NN_….py` — they put the repo root on `sys.path` and import `agent.*`.
 
-```json
-{
-  "mcpServers": {
-    "agent-unwrapped-tools": {
-      "command": "/ABS/PATH/agent-unwrapped/.venv/bin/python",
-      "args": ["/ABS/PATH/agent-unwrapped/mcp_server.py"]
-    }
-  }
-}
-```
+## Provider / env
 
-## Reliability (free-tier fail-safe)
+| Env | Purpose | Default |
+|---|---|---|
+| `OPENROUTER_API_KEY` | required (unless Anthropic) | — |
+| `OPENROUTER_MODEL_CHAT` | lessons 00–04, 07–08, 10 | `openai/gpt-oss-20b:free` |
+| `OPENROUTER_MODEL_CHAT_FALLBACKS` | after chat retries fail | `gemma-4-31b-it:free`, `gpt-oss-20b:free` |
+| `OPENROUTER_MODEL_TOOLS` | lessons **05, 09, 11, 12** (must support `tools`) | `openai/gpt-oss-20b:free` |
+| `OPENROUTER_MODEL_TOOLS_FALLBACKS` | after tools retries fail | `gemma-4-31b-it:free`, `openrouter/free` |
+| `LLM_PROVIDER` | `openrouter` or `anthropic` | `openrouter` |
 
-Free OpenRouter flakes often (timeouts, `429`, `502`, capacity). All API lessons go through `common.chat`, which:
+Free Nemotron often stalls — prefer `gpt-oss` for chat/evals (see `.env.example`).  
+Quota exhausted? `LLM_PROVIDER=anthropic` + `ANTHROPIC_API_KEY`.  
+Tool-capable models: [openrouter.ai/models?supported_parameters=tools](https://openrouter.ai/models?supported_parameters=tools).
 
-1. Uses connect/read timeouts `(10s, 60s)`
-2. Retries up to **3** times with backoff `~1s → 2s → 4s`
-3. Retries on: timeouts, connection errors, `429` / `502` / `503`, capacity / rate body errors
-4. Does **not** retry: `401` / `403`, most `400`s
-5. Then tries **fallback models** from `OPENROUTER_MODEL_*_FALLBACKS`
+## Notes & reliability
+
+- Lessons **00–11** are framework-free; **12** is optional LangChain on the same loop.
+- Concepts / FAQ → [lessons/NOTES.md](lessons/NOTES.md).
+- Free OpenRouter flakes (`429`/`502`/timeouts). `agent.common.chat` retries 3× with backoff, then tries `OPENROUTER_MODEL_*_FALLBACKS`. Watch for `[common.chat] retry…` / `fallback model → …`.
+- Local package name `mcp/` shadows the PyPI SDK if imported after the repo is on `sys.path`. Lesson 06 imports the SDK first; always run the server as `python mcp/server.py` (not `python -m mcp.server`).
+
+<details>
+<summary>Retry flowchart</summary>
 
 ```mermaid
 flowchart TD
@@ -143,9 +97,17 @@ flowchart TD
   fallback -->|no| fail[raise clear error]
 ```
 
-Watch the terminal for `[common.chat] retry…` and `fallback model → …`.
+</details>
 
-## Notes
+## Optional: Cursor MCP
 
-- Lessons **00–11** are framework-free; **12** shows LangChain as optional sugar on the same loop.
-- Deep dive / “why does X work this way?” → [lessons/NOTES.md](lessons/NOTES.md).
+```json
+{
+  "mcpServers": {
+    "agent-unwrapped-tools": {
+      "command": "/ABS/PATH/agent-unwrapped/.venv/bin/python",
+      "args": ["/ABS/PATH/agent-unwrapped/mcp/server.py"]
+    }
+  }
+}
+```

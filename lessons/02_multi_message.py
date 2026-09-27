@@ -7,7 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from common import MODEL_CHAT, chat, choice_text, finish_reason
+from agent.common import MODEL_CHAT, chat, choice_text, finish_reason
 
 
 def main() -> None:

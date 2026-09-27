@@ -7,8 +7,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from common import pretty
-from tools import calculator, word_stats, list_tools, reverse_string
+from agent.common import pretty
+from agent.tools import calculator, word_stats, list_tools, reverse_string
 
 
 def main() -> None:

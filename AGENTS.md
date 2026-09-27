@@ -1,6 +1,6 @@
 # agent-unwrapped
 
-Teaching repo: raw LLM API → tools → agent loop → evals. Flat layout at repo root (`common.py`, `tools.py`, `agent.py`, `mcp_server.py`). Frameworks optional (lesson 12).
+Teaching repo: raw LLM API → tools → agent loop → evals. Packages at `agent/` (loop, common, tools) and `mcp/` (stdio server). Frameworks optional (lesson 12).
 
 ## Run
 
@@ -13,13 +13,14 @@ python lessons/00_mental_model.py
 ## Constraints
 
 - Goal: sell the raw agent loop; frameworks are optional sugar.
-- Keep flat teaching layout — do not restructure into a `src/` package.
+- Keep teaching UX: `python lessons/NN_*.py` (no install required); packages live at repo root, not under `src/`.
 - Non-goals: production agent framework, multi-provider SDKs beyond OpenRouter/Anthropic.
 
 ## Key decisions
 
+- 2026-09-27 — Layout `agent/` + `mcp/` packages (loop.py, not agent/agent.py). Reads like a real agent project; lessons still run as scripts.
 - 2026-09-27 — Renamed to agent-unwrapped. Sell raw agent loop; frameworks optional.
-- 2026-08 — Flat root modules + `lessons/NN_*.py`. Easy to read without package install.
+- Rejected — 2026-08 — Flat root modules (`common.py`, `tools.py`, `agent.py`, `mcp_server.py`). Superseded by package layout above.
 
 ## Session
 
