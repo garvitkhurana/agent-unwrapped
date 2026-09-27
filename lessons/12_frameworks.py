@@ -1,6 +1,6 @@
-"""12 — Same agent task: raw loop vs LangChain sugar.
+"""12 — Same agent task: raw loop vs LangChain AgentExecutor.
 
-Frameworks sit on top of messages + tool_calls + the loop you built in 09.
+Frameworks own the while / messages / tool_calls plumbing you built in 09.
 This lesson runs one task both ways so the mapping is obvious.
 
 Both halves honor LLM_PROVIDER (openrouter | anthropic) from .env —
@@ -31,7 +31,7 @@ from agent.common import (
 from agent.tools import calculator, word_stats
 
 TASK = (
-    "Use calculator for (10 + 5) * 2, then word_stats on 'framework sugar', "
+    "Use calculator for (10 + 5) * 2, then word_stats on 'framework demo', "
     "then report both briefly."
 )
 

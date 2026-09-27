@@ -38,7 +38,7 @@ python lessons/00_mental_model.py
 Foundation  00 → 01 → 02 → 03
 Capability  04 → 05 → 06 · 07 → 08
 Agency      09 agent loop
-Measure     10 gen evals → 11 agent evals
+Measure     10 output/prompt evals → 11 agent/behavior evals
 Optional    12 frameworks (same loop; LangChain owns the while)
 ```
 
