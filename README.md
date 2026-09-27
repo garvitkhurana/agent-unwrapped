@@ -1,6 +1,7 @@
-# llm-api-compare — 0→100 LLM path
+# agent-unwrapped — 0→100 LLM path
 
 Progressive path from one API message to **agents**, **evals**, and an optional **frameworks** lesson.  
+Sell the **raw agent loop** first; frameworks are optional (lesson 12).  
 Mostly **Python scripts** + [lessons/NOTES.md](lessons/NOTES.md). Core path has no framework.
 
 ## Setup
@@ -17,13 +18,15 @@ cp .env.example .env   # add OPENROUTER_API_KEY
 
 | Env | Purpose | Default |
 |---|---|---|
-| `OPENROUTER_API_KEY` | required | — |
+| `OPENROUTER_API_KEY` | required (unless using Anthropic) | — |
 | `OPENROUTER_MODEL_CHAT` | lessons 00–04, 07–08, 10 | `openai/gpt-oss-20b:free` |
 | `OPENROUTER_MODEL_CHAT_FALLBACKS` | tried after chat retries fail | `gemma-4-31b-it:free`, `gpt-oss-20b:free` |
 | `OPENROUTER_MODEL_TOOLS` | lessons **05, 09, 11, 12** (must support `tools`) | `openai/gpt-oss-20b:free` |
 | `OPENROUTER_MODEL_TOOLS_FALLBACKS` | tried after tools retries fail | `gemma-4-31b-it:free`, `openrouter/free` |
+| `LLM_PROVIDER` | `openrouter` (default) or `anthropic` | `openrouter` |
 
 Free Nemotron often stalls on OpenRouter — prefer `gpt-oss` for chat/evals (see `.env.example`).  
+When free quota is exhausted, set `LLM_PROVIDER=anthropic` plus `ANTHROPIC_API_KEY` (see `.env.example`).  
 Pick a tool-capable model: [openrouter.ai/models?supported_parameters=tools](https://openrouter.ai/models?supported_parameters=tools).
 
 **Concepts / FAQ:** [lessons/NOTES.md](lessons/NOTES.md) (one-pager: tokens, tools registry, MCP stdio, agent hooks, evals).
@@ -110,9 +113,9 @@ notebooks/         # optional tables only
 ```json
 {
   "mcpServers": {
-    "llm-api-compare-tools": {
-      "command": "/ABS/PATH/llm-api-compare/.venv/bin/python",
-      "args": ["/ABS/PATH/llm-api-compare/mcp_server.py"]
+    "agent-unwrapped-tools": {
+      "command": "/ABS/PATH/agent-unwrapped/.venv/bin/python",
+      "args": ["/ABS/PATH/agent-unwrapped/mcp_server.py"]
     }
   }
 }

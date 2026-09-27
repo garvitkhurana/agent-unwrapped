@@ -14,7 +14,7 @@ from mcp.server.fastmcp import FastMCP
 
 from tools import calculator, reverse_string, word_stats
 
-mcp = FastMCP("llm-harness-tools")
+mcp = FastMCP("agent-unwrapped-tools")
 
 
 @mcp.tool()
