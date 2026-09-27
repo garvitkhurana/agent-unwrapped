@@ -1,8 +1,9 @@
-# agent-unwrapped — 0→100 LLM path
+# agent-unwrapped
 
-Progressive path from one API message to **agents**, **evals**, and an optional **frameworks** lesson.  
-Sell the **raw agent loop** first; frameworks are optional (lesson 12).  
-Mostly **Python scripts** + [lessons/NOTES.md](lessons/NOTES.md). Core path has no framework.
+See the wire: raw agent loop — messages → tools → agents → evals. No framework required.
+
+Progressive path from one API message through **tools**, **MCP**, the **agent loop**, and **evals**; frameworks are optional sugar (lesson 12).  
+Mostly **Python scripts** + [lessons/NOTES.md](lessons/NOTES.md).
 
 ## Setup
 
